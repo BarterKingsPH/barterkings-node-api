@@ -27,12 +27,17 @@ app.use(session({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({"extended" : false}));
 
+app.use(function(req, res, next){
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
 router.get('/', function(req, res){
     res.json({'error' : false, 'message' : 'API SERVER IS ALIVE'});
 });
 
 //User Routes
-
 router.route('/users/logout')
     .get(privileges.checkUser, usersApi.logoutUser);
 
@@ -51,12 +56,12 @@ router.route('/users/login')
 //Item Routes
 router.route('/items')
     .get(itemsApi.getItems)
-    .post(itemsApi.createItem)
+    .post(privileges.checkUser, itemsApi.createItem)
 
 router.route('/items/:id')
     .get(itemsApi.getItemsById)
-    .put(itemsApi.updateItemById)
-    .delete(itemsApi.deleteItemById)
+    .put(privileges.checkUser, itemsApi.updateItemById)
+    .delete(privileges.checkUser, itemsApi.deleteItemById)
 
 router.route('*', function(req, res){
     res.send(404);

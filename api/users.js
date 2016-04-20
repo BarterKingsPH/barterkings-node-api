@@ -3,9 +3,10 @@ var bcrypt = require('bcrypt');
 
 exports.getUsers = function(req, res){
     var response = {};
+
     userModel.find({}, function(err, data){
         if(err) {
-            response = {'error' : true, 'message' : 'Error fetching data.'}
+            response = {'error' : true, 'message' : 'Error fetching user.'}
         }else {
             response = {'error' : false, 'message' : data}
         }
@@ -23,7 +24,8 @@ exports.createUser = function(req, res){
 
     db.userEmail = email;
     db.userPassword = bcrypt.hashSync(password, salt); 
-    db.userLevel = req.body.level;
+    db.userPrivilege = req.body.privilege;
+
     db.save(function(err, data){
         if(err) {
             response = { 'error' : true, 'message' : 'Error adding user.'};
@@ -36,11 +38,9 @@ exports.createUser = function(req, res){
 }
 
 exports.loginUser = function (req, res){
-
     var response = {};
     var db = new userModel();
     var id = req.body.id;
-
     var email = req.body.email;
     var password = req.body.password;
 
@@ -60,7 +60,7 @@ exports.loginUser = function (req, res){
                         req.session.auth = true;
                         req.session.userId = data._id;
                         req.session.email = data.userEmail;
-                        req.session.userLevel = data.userLevel;
+                        req.session.userPrivilege = data.userPrivilege;
                         response = { 'error' : false, 'message' : 'User authenticated'};
                     }else{
                         response = { 'error' : true, 'message' : 'Incorrect username or password.' }
@@ -79,7 +79,6 @@ exports.loginUser = function (req, res){
 }
 
 exports.logoutUser = function(req, res){
-
     var response = {};
 
     req.session.destroy(function(err){
@@ -99,9 +98,13 @@ exports.getUserById = function(req, res){
     
     userModel.findById(id, function(err, data){
         if(err){
-            response = { 'error' : true, 'message' : 'Error fetching data.' }
+            response = { 'error' : true, 'message' : 'Error fetching user.' }
         } else{
-            response = { 'error' : false, 'message' : data }
+
+            var userdata = data;
+            delete userdata.userPassword;
+
+            response = { 'error' : false, 'message' : userdata }
         }
 
         res.json(response);
@@ -114,12 +117,12 @@ exports.updateUserById = function(req, res){
     var id = req.params.id;
     var email = req.body.email;
     var password = req.body.password;
-    var level = req.body.level;
+    var privilege = req.body.privilege;
     var salt = bcrypt.genSaltSync(10);
 
     userModel.findById(id, function(err, data){
-        if(err || data === null ) {
-            response = { 'error' : true, 'message' : 'Error fetching data.' } ;
+        if(err) {
+            response = { 'error' : true, 'message' : 'Error fetching user.' } ;
         }else{
             if(email !== undefined){
                 data.userEmail = email;
@@ -127,15 +130,15 @@ exports.updateUserById = function(req, res){
             if(password !== undefined){
                 data.userPassword = bcrypt.hashSync(password, salt); 
             }
-            if(level !== undefined){
-                data.userLevel = level;
+            if(privilege !== undefined){
+                data.userPrivilege = privilege;
             }
 
             data.save(function(err){
                 if(err){
-                    response = { 'error' : true, 'message' : 'Error updating data.' };
+                    response = { 'error' : true, 'message' : 'Error updating user' };
                 } else {
-                    response = { 'error' : false, 'message' : 'Data is updated.' };
+                    response = { 'error' : false, 'message' : 'User is updated.' };
                 }
 
                 res.json(response);
@@ -150,14 +153,14 @@ exports.deleteUserById = function(req, res){
 
     userModel.findById(id, function(err, data){
         if(err) {
-            response = { 'error' : true, 'message' : 'Error fetching data.' } ;
+            response = { 'error' : true, 'message' : 'Error fetching user.' } ;
         }else {
         
             userModel.remove({ _id : id }, function(err){
                 if(err){
                     response = { 'error' : true, 'message' : 'Error deleting user.' };
                 } else{
-                    response = { 'error' : false, 'message' : 'Data associated with ' + id + ' is deleted.' };
+                    response = { 'error' : false, 'message' : 'User associated with ' + id + ' is deleted.' };
                 }
 
                 res.json(response);

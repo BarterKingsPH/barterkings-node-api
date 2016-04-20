@@ -5,7 +5,7 @@ var mongoSchema = mongoose.Schema;
 var userSchema = {
     'userEmail' : { type: String, require: true, index: { unique: true } },
     'userPassword' : { type: String, require: true },
-    'userLevel' : [String],
+    'userPrivilege' : [String],
     'dateAdded' : { type : Date, default : Date.now }
 };
 
