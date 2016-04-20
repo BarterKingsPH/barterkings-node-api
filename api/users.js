@@ -35,7 +35,8 @@ exports.createUser = function(req, res){
     });
 }
 
-exports.verifyUser = function (req, res){
+exports.loginUser = function (req, res){
+
     var response = {};
     var db = new userModel();
     var id = req.body.id;
@@ -56,6 +57,7 @@ exports.verifyUser = function (req, res){
                 }else{
 
                     if (isMatch) {
+                        req.session.auth = true;
                         req.session.userId = data._id;
                         req.session.email = data.userEmail;
                         req.session.userLevel = data.userLevel;
@@ -72,6 +74,21 @@ exports.verifyUser = function (req, res){
 
         };
 
+    });
+
+}
+
+exports.logoutUser = function(req, res){
+
+    var response = {};
+
+    req.session.destroy(function(err){
+        if (err) {
+            response = { 'error' : true, 'message' : 'Error in logging out.' }
+        }else{
+            response = { 'error' : false, 'message' : 'Logout successful.' }
+        };
+        res.json(response);
     });
 
 }
