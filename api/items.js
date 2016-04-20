@@ -119,7 +119,6 @@ exports.deleteItemById = function(req, res){
             
         };
 
-
     });
 
 }
