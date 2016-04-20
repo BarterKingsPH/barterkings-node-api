@@ -23,11 +23,12 @@ exports.createUser = function(req, res){
 
     db.userEmail = email;
     db.userPassword = bcrypt.hashSync(password, salt); 
+    db.userLevel = req.body.level;
     db.save(function(err, data){
         if(err) {
-            response = { 'error' : true, 'message' : 'Error adding data.'};
+            response = { 'error' : true, 'message' : 'Error adding user.'};
         }else{
-            response = { 'error' : false, 'message' : 'Data added.' }
+            response = { 'error' : false, 'message' : 'User has been added.' }
         }
 
         res.json(response);
@@ -45,7 +46,7 @@ exports.verifyUser = function (req, res){
     userModel.findOne( { userEmail : email } , function(err, data){
 
         if (err) {
-            response = { 'error' : true, 'message' : 'Error fetching data.' }
+            response = { 'error' : true, 'message' : 'Error fetching user.' }
         } else{
 
             bcrypt.compare(password, data.userPassword, function(err, isMatch){
@@ -57,7 +58,7 @@ exports.verifyUser = function (req, res){
                     if (isMatch) {
                         req.session.userId = data._id;
                         req.session.email = data.userEmail;
-                        //req.session.userLevel = data.userLevel;
+                        req.session.userLevel = data.userLevel;
                         response = { 'error' : false, 'message' : 'User authenticated'};
                     }else{
                         response = { 'error' : true, 'message' : 'Incorrect username or password.' }
@@ -96,6 +97,7 @@ exports.updateUserById = function(req, res){
     var id = req.params.id;
     var email = req.body.email;
     var password = req.body.password;
+    var level = req.body.level;
     var salt = bcrypt.genSaltSync(10);
 
     userModel.findById(id, function(err, data){
@@ -107,6 +109,9 @@ exports.updateUserById = function(req, res){
             } 
             if(password !== undefined){
                 data.userPassword = bcrypt.hashSync(password, salt); 
+            }
+            if(level !== undefined){
+                data.userLevel = level;
             }
 
             data.save(function(err){

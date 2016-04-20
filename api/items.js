@@ -61,15 +61,26 @@ exports.updateItemById = function(req, res){
 
     var response = {};
     var id = req.params.id;
+    var name = req.body.name;
+    var value = req.body.value;
+    var tags = req.body.tags;
 
     itemModel.findById(id, function(err, data){
         if (err) {
-            response = { 'error' : true, 'message' : 'Error fetching data.' };
+            response = { 'error' : true, 'message' : 'Error fetching item.' };
         }else{
 
-            data.itemName = req.body.name,
-            data.itemValue = req.body.value,
-            data.itemTags = req.body.tags
+            if (name) {
+                data.itemName = name;
+            };
+
+            if (value) {
+                data.itemValue = value;
+            };
+
+            if (tags) {
+                data.itemTags = tags;
+            };
 
             data.save(function(err){
                 if (err) {
